@@ -8,9 +8,18 @@ server.use(express.json());
 
 server.get('/accounts', async (req, res) => {
   try {
-    //const accounts = await db.select(*).from('accounts');
-    const accounts = await db('accounts');
-    res.status(200).json(accounts);
+    const query = req.query;
+    let accounts = db('accounts');
+    if (query) {
+      if (query.sortby) {
+        const order = query.sortdir ? query.sortdir : 'desc';
+        accounts = accounts.orderBy(query.sortby, order);
+      }
+      if (query.limit) {
+        accounts = accounts.limit(query.limit);
+      }
+    }
+    res.status(200).json(await accounts);
   } catch (err) {
     console.log('Error: ', err);
     res.status(500).json({
